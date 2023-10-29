@@ -1,0 +1,102 @@
+<meta charset="UTF-8">
+<title>EPZ compress</title>
+<script>
+    onerror = function (e){
+        div.innerHTML = e
+    }
+    onunhandledrejection = function(e){
+        div.innerHTML = e.reason
+    }
+</script>
+<script src="lzma.js"></script>
+<script src="closure.js"></script>
+<h3>压缩</h3>
+<input type="file" id="ff">
+<style>h3{margin: 4px;}</style>
+<details>
+    <summary>高级</summary>
+    <fieldset id="bb">
+        <legend>压缩方式</legend>
+        <input type="text" id="a1" value="5"> level <hr>
+        <input type="text" id="a2" value="65536"> dictSize <hr>
+        <input type="text" id="a3" value="3"> lc <hr>
+        <input type="text" id="a4" value="0"> lp <hr>
+        <input type="text" id="a5" value="2"> pb <hr>
+        <input type="text" id="a6" value="32"> fb <hr>
+    </fieldset>
+</details>
+<hr>
+<h3>解压</h3>
+<input type="file" id="ff1"> 使用 closure.js（6kb） <br>
+<input type="file" id="ff2"> 使用 lzma.js（103kb） <br>
+<hr>
+<div id="div"></div>
+<script>
+lzma = LZMA();
+function bytesize(e){var t=arguments.length>1&&void 0!==arguments[1]?arguments[1]:2;if(0===e)return"0 Bytes";var n=1024,r=t<0?0:t,a=["Bytes","KB","MB","GB","TB","PB","EB","ZB","YB"],o=Math.floor(Math.log(e)/Math.log(n));return parseFloat((e/Math.pow(n,o)).toFixed(r))+" "+a[o]}
+ff.onchange = function(){
+    div.innerHTML = "";
+    if(!ff.value) return;
+    var time = performance.now() | 0;
+    fx = new FileReader();
+    fx.onload = function(){
+        result = new Uint8Array(fx.result);
+        var d = {level:a1.value|0,dictSize:a2.value|0,lc:a3.value|0,lp:a4.value|0,pb:a5.value|0,fb:a6.value|0}
+        result1 = lzma.compress(result,d);
+        ff.value=null;
+        div.innerHTML = "用时：" +  (~~performance.now()-time)/1000 + "s" + " 压缩前："+bytesize(result.length) + " 压缩后：" +bytesize(result1.length);
+        aa = document.createElement('a');
+        aa.href = URL.createObjectURL(new Blob([result1]));
+        aa.download = "compress.lzma"
+        aa.click();
+    }
+    fx.onerror = function(e){
+        div.innerHTML = fx.error
+    }
+    fx.readAsArrayBuffer(ff.files[0]);
+}
+ff2.onchange = function(){
+    div.innerHTML = "";
+    if(!ff2.value) return;
+    var time = performance.now() | 0;
+    var fx = new FileReader();
+    fx.onload = function(){
+        result = new Uint8Array(fx.result);
+        var d = {level:a1.value|0,dictSize:a2.value|0,lc:a3.value|0,lp:a4.value|0,pb:a5.value|0,fb:a6.value|0}
+        result1 = lzma.decompress(result,d);
+        ff2.value=null;
+        div.innerHTML = (~~performance.now()-time)/1000 + "s" + " 解压前："+bytesize(result.length) + " 解压后：" +bytesize(result1.length);
+        aa = document.createElement('a');
+        aa.href = URL.createObjectURL(new Blob([result1]));
+        aa.download = "decompress.bin"
+        aa.click();
+    }
+    fx.onerror = function(e){
+        div.innerHTML = fx.error
+    }
+    fx.readAsArrayBuffer(ff2.files[0]);
+}
+</script>
+<script>
+ff1.onchange = function(){
+    div.innerHTML = "";
+    if(!ff1.value) return;
+    var time = performance.now() | 0;
+    var fx = new FileReader();
+    fx.onload = function(){
+        result = new Uint8Array(fx.result);
+        var d = {level:a1.value|0,dictSize:a2.value|0,lc:a3.value|0,lp:a4.value|0,pb:a5.value|0,fb:a6.value|0}
+        result1 = lzma_decompress(result,d);
+        ff1.value=null;
+        div.innerHTML = "用时：" + (~~performance.now()-time)/1000 + "s" + " 解压前："+bytesize(result.length) + " 解压后：" +bytesize(result1.length);
+        aa = document.createElement('a');
+        aa.href = URL.createObjectURL(new Blob([result1]));
+        aa.download = "decompress.bin"
+        aa.click();
+    }
+    fx.onerror = function(e){
+        div.innerHTML = fx.error
+    }
+    fx.readAsArrayBuffer(ff1.files[0]);
+}
+</script>
